@@ -1,0 +1,31 @@
+name: daily
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 18 * * *'
+
+jobs:
+  generate:
+    name: Generate dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Generate Github-Actions dashboard
+        run: |
+          python generate.py
+          git config user.email "actions@github"
+          git config user.name "github-actions"
+          git add README.md
+          git commit -m "automatic update of github-actions dashboard"
+          git push origin master
