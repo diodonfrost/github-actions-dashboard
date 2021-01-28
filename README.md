@@ -137,6 +137,11 @@ Github-Actions Dashboard
 
 ---
 
+### github-actions-dashboard ###
+[![daily](https://github.com/diodonfrost/github-actions-dashboard/workflows/daily/badge.svg)](https://github.com/diodonfrost/github-actions-dashboard/actions)
+
+---
+
 ### packer-template-solaris ###
 [![CI](https://github.com/diodonfrost/packer-template-solaris/workflows/CI/badge.svg)](https://github.com/diodonfrost/packer-template-solaris/actions)
 
