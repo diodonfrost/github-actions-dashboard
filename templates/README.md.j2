@@ -1,0 +1,9 @@
+Github-Actions Dashboard
+========================
+
+{% for github_workflow in github_workflows %}
+### {{ github_workflow.repo_name }} ###
+{% for markdown_badge_url in github_workflow.markdown_badge_urls %}{{ markdown_badge_url }}{% endfor %}
+
+---
+{% endfor %}
