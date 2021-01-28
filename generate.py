@@ -48,22 +48,28 @@ def generate_file(template_file, template_vars, template_dir_path="templates") -
         _file.write(jinja_render)
 
 
-client = Github(os.getenv("GITHUB_TOKEN"))
+def main():
+    """Main entrypoint function."""
+    client = Github(os.getenv("GITHUB_TOKEN"))
 
-github_workflows = []
-for repo_info in client.get_user().get_repos():
-    workflow_map = {"repo_name": repo_info.name, "markdown_badge_urls": []}
+    github_workflows = []
+    for repo_info in client.get_user().get_repos():
+        workflow_map = {"repo_name": repo_info.name, "markdown_badge_urls": []}
 
-    for workflow in repo_info.get_workflows():
-        github_workflow_markdown_badge_url = generate_markdown_badge(
-            workflow_name=workflow.name,
-            workflow_badge_url=workflow.badge_url,
-            workflow_url=repo_info.html_url + "/actions",
-        )
-        workflow_map["markdown_badge_urls"].append(github_workflow_markdown_badge_url)
-    if workflow_map["markdown_badge_urls"]:
-        github_workflows.append(workflow_map)
+        for workflow in repo_info.get_workflows():
+            github_workflow_markdown_badge_url = generate_markdown_badge(
+                workflow_name=workflow.name,
+                workflow_badge_url=workflow.badge_url,
+                workflow_url=repo_info.html_url + "/actions",
+            )
+            workflow_map["markdown_badge_urls"].append(github_workflow_markdown_badge_url)
+        if workflow_map["markdown_badge_urls"]:
+            github_workflows.append(workflow_map)
+    
+    generate_file(
+        template_file="README.md.j2", template_vars={"github_workflows": github_workflows}
+    )
 
-generate_file(
-    template_file="README.md.j2", template_vars={"github_workflows": github_workflows}
-)
+
+if __name__ == "__main__":
+    main()
