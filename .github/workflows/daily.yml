@@ -29,3 +29,5 @@ jobs:
           git add README.md
           git commit -m "automatic update of github-actions dashboard"
           git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
