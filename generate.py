@@ -2,7 +2,9 @@
 
 """Generate github-actions dashboard."""
 
+import argparse
 import os
+from urllib.parse import urlparse
 
 from github import Github
 import jinja2
@@ -104,14 +106,27 @@ def generate_file(template_file, template_vars, template_dir_path="templates") -
 
 def main():
     """Main entrypoint function."""
-    client = Github(os.getenv("GITHUB_TOKEN"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--github-api-url",
+        help="Github api base url, example: https://github.my-company.com/api/v3",
+        default="https://api.github.com",
+        type=str,
+        metavar="",
+    )
+    args = parser.parse_args()
+    github_api_url = args.github_api_url
+    client = Github(base_url=github_api_url, login_or_token=os.getenv("GITHUB_TOKEN"))
 
     github_workflows = []
     for repo_info in client.get_user().get_repos():
         workflow_map = {"repo_name": repo_info.name, "markdown_badge_urls": []}
+        github_base_url = "https://" + urlparse(repo_info.git_url).hostname
 
         for workflow in repo_info.get_workflows():
-            parse = GithubUrlParsing(repo_full_name=repo_info.full_name)
+            parse = GithubUrlParsing(
+                repo_full_name=repo_info.full_name, github_base_url=github_base_url
+            )
             markdown_badge = parse.get_markdown_badge_url(workflow_name=workflow.name)
             workflow_map["markdown_badge_urls"].append(markdown_badge)
 
