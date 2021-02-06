@@ -104,8 +104,8 @@ def generate_file(template_file, template_vars, template_dir_path="templates") -
         _file.write(jinja_render)
 
 
-def main():
-    """Main entrypoint function."""
+def parsing_agrv():
+    """Parsing script arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--github-api-url",
@@ -114,8 +114,12 @@ def main():
         type=str,
         metavar="",
     )
-    args = parser.parse_args()
-    github_api_url = args.github_api_url
+    return parser.parse_args()
+
+
+def main():
+    """Main entrypoint function."""
+    github_api_url = parsing_agrv().github_api_url
     client = Github(base_url=github_api_url, login_or_token=os.getenv("GITHUB_TOKEN"))
 
     github_workflows = []
