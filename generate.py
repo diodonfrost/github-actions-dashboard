@@ -117,11 +117,25 @@ def parsing_agrv():
     return parser.parse_args()
 
 
-def main():
-    """Main entrypoint function."""
-    github_api_url = parsing_agrv().github_api_url
-    client = Github(base_url=github_api_url, login_or_token=os.getenv("GITHUB_TOKEN"))
+def get_all_actions_badges(client) -> list[map]:
+    """Get all Github-Actions badge in markdown format
 
+    :param str client:
+        Login client to used to authenticate to Github Endpoint API.
+
+    :return list[map] github_workflows:
+        Return all Github-Actions markdown badge like this:
+        [
+            {
+                "repo_name": "github-actions-dashboard",
+                "markdown_badge_urls": "[![daily](https://github.com/diodonfrost/github-actions-dashboard/workflows/daily/badge.svg)](https://github.com/diodonfrost/github-actions-dashboard)"
+            },
+            {
+                "repo_name": "ansible-role-ohmyzsh",
+                "markdown_badge_urls": "[![Ansible Galaxy](https://img.shields.io/badge/galaxy-diodonfrost.ohmyzsh-660198.svg)](https://galaxy.ansible.com/diodonfrost/ohmyzsh)"
+            }
+        ]
+    """
     github_workflows = []
     for repo_info in client.get_user().get_repos():
         workflow_map = {"repo_name": repo_info.name, "markdown_badge_urls": []}
@@ -136,10 +150,19 @@ def main():
 
         if workflow_map["markdown_badge_urls"]:
             github_workflows.append(workflow_map)
+    return github_workflows
+
+
+def main():
+    """Main entrypoint function."""
+    github_api_url = parsing_agrv().github_api_url
+    client = Github(base_url=github_api_url, login_or_token=os.getenv("GITHUB_TOKEN"))
+
+    github_workflows_badges = get_all_actions_badges(client=client)
 
     generate_file(
         template_file="README.md.j2",
-        template_vars={"github_workflows": github_workflows},
+        template_vars={"github_workflows": github_workflows_badges},
     )
 
 
