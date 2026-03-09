@@ -35,50 +35,52 @@ class GithubUrlParsing:
         """
         return self.github_repo_url + "/actions"
 
-    def get_badge_url(self, workflow_name):
+    def get_badge_url(self, workflow_filename):
         """Get github badge url for the given repository.
 
-        :param str workflow_name:
-            The Github-Action workflow name.
+        :param str workflow_filename:
+            The Github-Action workflow filename (e.g. ci.yml).
 
         :return str github_badge_url_status:
             The fully Github-Action badge status url.
 
         >>> t = GithubUrlParsing(repo_full_name="python/mypy")
-        >>> t.get_badge_url(workflow_name="main")
-        'https://github.com/python/mypy/workflows/main/badge.svg'
+        >>> t.get_badge_url(workflow_filename="main.yml")
+        'https://github.com/python/mypy/actions/workflows/main.yml/badge.svg'
 
-        >>> t.get_badge_url(workflow_name="Run mypy_primer")
-        'https://github.com/python/mypy/workflows/Run%20mypy_primer/badge.svg'
+        >>> t.get_badge_url(workflow_filename="run_mypy_primer.yml")
+        'https://github.com/python/mypy/actions/workflows/run_mypy_primer.yml/badge.svg'
         """
         return (
             self.github_repo_url
-            + "/workflows/"
-            + workflow_name.replace(" ", "%20")
+            + "/actions/workflows/"
+            + workflow_filename
             + "/badge.svg"
         )
 
-    def get_markdown_badge_url(self, workflow_name):
+    def get_markdown_badge_url(self, workflow_name, workflow_filename):
         """Get Github badge url in markdown format.
 
         :param str workflow_name:
-            The Github-Action workflow name.
+            The Github-Action workflow display name.
+        :param str workflow_filename:
+            The Github-Action workflow filename (e.g. ci.yml).
 
         :return str github_badge_url_status:
             The fully Github-Action badge status url in markdown format.
 
         >>> t = GithubUrlParsing(repo_full_name="python/mypy")
-        >>> t.get_markdown_badge_url(workflow_name="main")
-        '[![main](https://github.com/python/mypy/workflows/main/badge.svg)](https://github.com/python/mypy/actions)'
+        >>> t.get_markdown_badge_url(workflow_name="main", workflow_filename="main.yml")
+        '[![main](https://github.com/python/mypy/actions/workflows/main.yml/badge.svg)](https://github.com/python/mypy/actions)'
 
-        >>> t.get_markdown_badge_url(workflow_name="Run mypy_primer")
-        '[![Run mypy_primer](https://github.com/python/mypy/workflows/Run%20mypy_primer/badge.svg)](https://github.com/python/mypy/actions)'
+        >>> t.get_markdown_badge_url(workflow_name="Run mypy_primer", workflow_filename="run_mypy_primer.yml")
+        '[![Run mypy_primer](https://github.com/python/mypy/actions/workflows/run_mypy_primer.yml/badge.svg)](https://github.com/python/mypy/actions)'
         """
         return (
             "[!["
             + workflow_name
             + "]("
-            + self.get_badge_url(workflow_name)
+            + self.get_badge_url(workflow_filename)
             + ")]("
             + self.get_workflow_url()
             + ")"
@@ -141,11 +143,14 @@ def get_all_actions_badges(client) -> list[map]:
         workflow_map = {"repo_name": repo_info.name, "markdown_badge_urls": []}
         github_base_url = "https://" + urlparse(repo_info.git_url).hostname
 
+        parse = GithubUrlParsing(
+            repo_full_name=repo_info.full_name, github_base_url=github_base_url
+        )
         for workflow in repo_info.get_workflows():
-            parse = GithubUrlParsing(
-                repo_full_name=repo_info.full_name, github_base_url=github_base_url
+            workflow_filename = os.path.basename(workflow.path)
+            markdown_badge = parse.get_markdown_badge_url(
+                workflow_name=workflow.name, workflow_filename=workflow_filename
             )
-            markdown_badge = parse.get_markdown_badge_url(workflow_name=workflow.name)
             workflow_map["markdown_badge_urls"].append(markdown_badge)
 
         if workflow_map["markdown_badge_urls"]:
