@@ -6,7 +6,7 @@ import argparse
 import os
 from urllib.parse import urlparse
 
-from github import Github
+from github import Auth, Github
 import jinja2
 
 
@@ -156,7 +156,7 @@ def get_all_actions_badges(client) -> list[map]:
 def main():
     """Main entrypoint function."""
     github_api_url = parsing_agrv().github_api_url
-    client = Github(base_url=github_api_url, login_or_token=os.getenv("GITHUB_TOKEN"))
+    client = Github(base_url=github_api_url, auth=Auth.Token(os.getenv("GITHUB_TOKEN")))
 
     github_workflows_badges = get_all_actions_badges(client=client)
 
